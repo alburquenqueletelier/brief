@@ -667,17 +667,17 @@ FASE 2 — DNS
 
 FASE 3 — Nginx base (HTTP)
   [X] Crear configs en /etc/nginx/sites-available/
-  [ ] Habilitar sites, sudo nginx -t, reload
+  [X] Habilitar sites, sudo nginx -t, reload
 
 FASE 4 — SSL
-  [ ] sudo certbot --nginx -d recuerdabot.alburquenque.net -d aerium.alburquenque.net
-  [ ] Verificar HTTPS y redirect 301
+  [X] sudo certbot --nginx -d recuerdabot.alburquenque.net -d aerium.alburquenque.net
+  [X] Verificar HTTPS y redirect 301
 
 FASE 5 — RecuerdaBot
-  [ ] git clone en /var/www/alburquenque.net/recuerdabot/repo
-  [ ] Crear .env.prod con secrets
-  [ ] docker compose -f docker-compose.prod.yml up -d
-  [ ] Verificar https://recuerdabot.alburquenque.net/docs
+  [X] git clone en /var/www/alburquenque.net/recuerdabot/repo
+  [X] Crear .env.prod con secrets
+  [X] docker compose -f docker-compose.prod.yml up -d
+  [X] Verificar https://recuerdabot.alburquenque.net/docs
 
 FASE 6 — Aerium DB
   [ ] Crear /var/www/alburquenque.net/aerium/docker/docker-compose.yml
@@ -699,11 +699,11 @@ FASE 8 — Aerium Frontend
   [ ] sudo systemctl reload nginx
 
 FASE 9 — Landing page
-  [ ] Inicializar proyecto Vue3+Vite en landing/
-  [ ] Desarrollar localmente (npm run dev)
-  [ ] Conectar repo a Vercel
-  [ ] Configurar dominio alburquenque.net en Vercel
-  [ ] Push a main → deploy automático
+  [X] Inicializar proyecto Vue3+Vite en landing/
+  [X] Desarrollar localmente (npm run dev)
+  [X] Conectar repo a Vercel
+  [X] Configurar dominio alburquenque.net en Vercel
+  [X] Push a main → deploy automático
 
 FASE 10 — Operaciones
   [ ] Configurar UptimeRobot para monitoreo
