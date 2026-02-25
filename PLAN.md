@@ -234,7 +234,7 @@ Docker Compose: recuerdabot
 
 ### Estructura en el servidor
 ```
-/var/www/alburquenque.net/recuerda/
+/var/www/alburquenque.net/recuerdabot/
 ├── repo/                     # git clone del repo
 │   ├── docker-compose.yml
 │   ├── docker-compose.prod.yml
@@ -267,7 +267,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - /var/www/alburquenque.net/recuerda/data/postgres:/var/lib/postgresql/data
+      - /var/www/alburquenque.net/recuerdabot/data/postgres:/var/lib/postgresql/data
     networks:
       - recuerda-internal
     healthcheck:
@@ -380,7 +380,7 @@ server {
 
 ### Comandos de operación
 ```bash
-cd /var/www/alburquenque.net/recuerda/repo
+cd /var/www/alburquenque.net/recuerdabot/repo
 
 # Levantar
 docker compose -f docker-compose.prod.yml up -d
@@ -610,7 +610,7 @@ echo "==> O instala la CLI: npm i -g vercel && vercel --prod"
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
-APP_DIR="/var/www/alburquenque.net/recuerda/repo"
+APP_DIR="/var/www/alburquenque.net/recuerdabot/repo"
 echo "==> Desplegando RecuerdaBot..."
 cd "$APP_DIR"
 git pull origin main
@@ -662,11 +662,11 @@ FASE 1 — VM base
 
 FASE 2 — DNS
   [X] Agregar A records: recuerda, aerium → IP de la VM
-  [ ] Configurar dominio apex en Vercel (alburquenque.net → Vercel)
-  [ ] Esperar propagación: dig recuerdabot.alburquenque.net A
+  [X] Configurar dominio apex en Vercel (alburquenque.net → Vercel)
+  [X] Esperar propagación: dig recuerdabot.alburquenque.net A
 
 FASE 3 — Nginx base (HTTP)
-  [ ] Crear configs en /etc/nginx/sites-available/
+  [X] Crear configs en /etc/nginx/sites-available/
   [ ] Habilitar sites, sudo nginx -t, reload
 
 FASE 4 — SSL
@@ -674,7 +674,7 @@ FASE 4 — SSL
   [ ] Verificar HTTPS y redirect 301
 
 FASE 5 — RecuerdaBot
-  [ ] git clone en /var/www/alburquenque.net/recuerda/repo
+  [ ] git clone en /var/www/alburquenque.net/recuerdabot/repo
   [ ] Crear .env.prod con secrets
   [ ] docker compose -f docker-compose.prod.yml up -d
   [ ] Verificar https://recuerdabot.alburquenque.net/docs
@@ -735,7 +735,7 @@ alburquenque.net/             (repo raíz)
 --- EN LA VM (no en el repo) ---
 
 /var/www/alburquenque.net/
-├── recuerda/repo/            (git clone de recuerdabot)
+├── recuerdabot/repo/            (git clone de recuerdabot)
 ├── aerium/backend/repo/      (git clone de aerium-backend)
 ├── aerium/frontend/repo/     (git clone de aerium-frontend)
 ├── aerium/frontend/dist/     (build estático servido por Nginx)
