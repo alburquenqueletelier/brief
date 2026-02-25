@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-dark-space text-gray-100 font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-neon-cyan/30 text-white;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-space;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neon-cyan/40;
+  }
+}
+
+@layer components {
+  .neon-text {
+    @apply text-neon-cyan;
+    text-shadow:
+      0 0 10px theme('colors.neon-cyan'),
+      0 0 30px rgb(0 245 255 / 0.5);
+  }
+
+  .glass-card {
+    background: rgba(19, 19, 26, 0.7);
+    @apply border border-dark-border rounded-xl backdrop-blur-sm;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-semibold font-mono text-sm tracking-wide
+           bg-neon-cyan text-dark-space transition-all duration-300
+           hover:shadow-[0_0_24px_rgba(0,245,255,0.45)]
+           hover:scale-[1.03] active:scale-95 select-none;
+  }
+
+  .btn-outline {
+    @apply px-6 py-3 rounded-lg font-semibold font-mono text-sm tracking-wide
+           border border-neon-cyan/50 text-neon-cyan
+           transition-all duration-300
+           hover:bg-neon-cyan/10 hover:border-neon-cyan
+           active:scale-95 select-none;
+  }
+
+  .section-label {
+    @apply text-neon-cyan font-mono text-xs tracking-[0.25em] uppercase mb-3 block;
+  }
+}
