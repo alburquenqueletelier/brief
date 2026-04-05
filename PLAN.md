@@ -426,20 +426,18 @@ Azure VM
 ### Estructura en el servidor
 ```
 /var/www/alburquenque.net/aerium/
-├── backend/
-│   ├── repo/              # git clone del backend
-│   │   ├── main.py
-│   │   ├── requirements.txt
-│   │   ├── alembic.ini
-│   │   ├── .env
-│   │   └── app/
-│   │       ├── database.py
-│   │       ├── models/
-│   │       ├── api/
-│   │       └── schemas/
-│   └── venv/              # Python virtualenv
-├── frontend/
-│   ├── repo/              # git clone del frontend
+├── aerium-backend/        # git clone del backend
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── alembic.ini
+│   ├── .env
+│   ├── .venv/             # Python virtualenv (dentro del repo)
+│   └── app/
+│       ├── database.py
+│       ├── models/
+│       ├── api/
+│       └── schemas/
+├── aerium-frontend/       # git clone del frontend
 │   └── dist/              # build estático (servido por Nginx)
 └── docker/
     ├── docker-compose.yml # Solo la DB
@@ -470,9 +468,9 @@ services:
       retries: 5
 ```
 
-### Variables de entorno — `backend/repo/.env`
+### Variables de entorno — `aerium-backend/.env`
 ```bash
-DATABASE_URL=postgresql+asyncpg://aerium_user:<password>@127.0.0.1:5432/aerium_db
+DATABASE_URL=postgresql+asyncpg://aerium_user:<password>@127.0.0.1:2345/aerium_db
 SECRET_KEY=<256-bit-random>
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
@@ -489,11 +487,11 @@ Description=Aerium FastAPI Backend
 After=network.target docker.service
 
 [Service]
-User=azureuser
-WorkingDirectory=/var/www/alburquenque.net/aerium/backend/repo
-Environment="PATH=/var/www/alburquenque.net/aerium/backend/venv/bin"
-EnvironmentFile=/var/www/alburquenque.net/aerium/backend/repo/.env
-ExecStart=/var/www/alburquenque.net/aerium/backend/venv/bin/uvicorn \
+User=baal
+WorkingDirectory=/var/www/alburquenque.net/aerium/aerium-backend
+Environment="PATH=/var/www/alburquenque.net/aerium/aerium-backend/.venv/bin"
+EnvironmentFile=/var/www/alburquenque.net/aerium/aerium-backend/.env
+ExecStart=/var/www/alburquenque.net/aerium/aerium-backend/.venv/bin/uvicorn \
     main:app \
     --host 127.0.0.1 \
     --port 8001 \
@@ -530,7 +528,7 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
 
     # Frontend estático
-    root /var/www/alburquenque.net/aerium/frontend/dist;
+    root /var/www/alburquenque.net/aerium/aerium-frontend/dist/;
     index index.html;
 
     location / {
@@ -580,14 +578,13 @@ sudo systemctl status aerium-backend
 sudo journalctl -u aerium-backend -f
 
 # Migraciones
-cd /var/www/alburquenque.net/aerium/backend/repo
-source ../venv/bin/activate
+cd /var/www/alburquenque.net/aerium/aerium-backend
+source .venv/bin/activate
 alembic upgrade head
 
 # Frontend build
-cd /var/www/alburquenque.net/aerium/frontend/repo
+cd /var/www/alburquenque.net/aerium/aerium-frontend
 npm ci && npm run build
-cp -r dist/ ../dist/
 sudo systemctl reload nginx
 ```
 
@@ -625,14 +622,13 @@ echo "==> RecuerdaBot desplegado."
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
-BACKEND_DIR="/var/www/alburquenque.net/aerium/backend/repo"
-FRONTEND_DIR="/var/www/alburquenque.net/aerium/frontend/repo"
-VENV="/var/www/alburquenque.net/aerium/backend/venv"
+BACKEND_DIR="/var/www/alburquenque.net/aerium/aerium-backend"
+FRONTEND_DIR="/var/www/alburquenque.net/aerium/aerium-frontend"
 
 echo "==> Desplegando Aerium Backend..."
 cd "$BACKEND_DIR"
 git pull origin main
-source "$VENV/bin/activate"
+source ".venv/bin/activate"
 pip install -r requirements.txt -q
 alembic upgrade head
 sudo systemctl restart aerium-backend
@@ -642,7 +638,6 @@ cd "$FRONTEND_DIR"
 git pull origin main
 npm ci
 npm run build
-cp -r dist/ ../dist/
 sudo nginx -t && sudo systemctl reload nginx
 
 echo "==> Aerium desplegado exitosamente."
@@ -680,17 +675,18 @@ FASE 5 — RecuerdaBot
   [X] Verificar https://recuerdabot.alburquenque.net/docs
 
 FASE 6 — Aerium DB
-  [ ] Crear /var/www/alburquenque.net/aerium/docker/docker-compose.yml
-  [ ] docker compose up -d
-  [ ] Verificar conexión desde el host
+  [X] Crear docker-compose.yml (DB corre en aerium_mono-repo/aerium-backend/docker-compose.yml)
+  [X] docker compose up -d (se levanta automáticamente con la VM)
+  [X] Verificar conexión desde el host (usuario creado, conexión ok)
+  NOTA: DB expuesta en 0.0.0.0:2345 (pendiente mover a 127.0.0.1 en refactor futuro)
 
 FASE 7 — Aerium Backend
-  [ ] git clone backend repo
-  [ ] python3 -m venv venv && pip install -r requirements.txt
-  [ ] Crear .env con DATABASE_URL apuntando a 127.0.0.1:5432
-  [ ] alembic upgrade head
-  [ ] Crear y habilitar aerium-backend.service
-  [ ] sudo systemctl enable --now aerium-backend
+  [X] git clone backend repo → /var/www/alburquenque.net/aerium/aerium_mono-repo/aerium-backend
+  [X] .venv dentro del repo, pip install -r requirements.txt
+  [X] .env con DATABASE_URL apuntando a 127.0.0.1:2345 (puerto real de la DB)
+  [X] alembic upgrade head
+  [X] Crear aerium-backend.service con paths del mono-repo
+  [X] sudo systemctl enable --now aerium-backend
 
 FASE 8 — Aerium Frontend
   [ ] git clone frontend repo
@@ -735,11 +731,11 @@ alburquenque.net/             (repo raíz)
 --- EN LA VM (no en el repo) ---
 
 /var/www/alburquenque.net/
-├── recuerdabot/repo/            (git clone de recuerdabot)
-├── aerium/backend/repo/      (git clone de aerium-backend)
-├── aerium/frontend/repo/     (git clone de aerium-frontend)
-├── aerium/frontend/dist/     (build estático servido por Nginx)
-└── aerium/docker/            (docker-compose para DB)
+├── recuerdabot/repo/                        (git clone de recuerdabot)
+└── aerium/
+    ├── aerium-backend/                      (git clone, .venv dentro, .env)
+    ├── aerium-frontend/                     (git clone, dist/ servido por Nginx)
+    └── docker/                              (docker-compose.yml solo DB)
 
 /etc/systemd/system/
 └── aerium-backend.service
