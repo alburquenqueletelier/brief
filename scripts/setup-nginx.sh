@@ -13,6 +13,7 @@ SITES_ENABLED="/etc/nginx/sites-enabled"
 DOMAINS=(
     "recuerdabot.alburquenque.net"
     "aerium.alburquenque.net"
+    "smartengage.alburquenque.net"
 )
 
 # ── 1. Bloque map para WebSocket ────────────────────────────────────────────
@@ -34,11 +35,13 @@ fi
 echo "==> Copiando configs de Nginx..."
 sudo cp "$REPO_DIR/nginx/recuerdabot.alburquenque.net.conf" "$SITES_AVAILABLE/recuerdabot.alburquenque.net"
 sudo cp "$REPO_DIR/nginx/aerium.alburquenque.net.conf"      "$SITES_AVAILABLE/aerium.alburquenque.net"
+sudo cp "$REPO_DIR/nginx/smartengage.alburquenque.net.conf"      "$SITES_AVAILABLE/smartengage.alburquenque.net"
 
 # ── 3. Habilitar sites (idempotente con -sf) ─────────────────────────────────
 echo "==> Habilitando sites..."
 sudo ln -sf "$SITES_AVAILABLE/recuerdabot.alburquenque.net" "$SITES_ENABLED/"
 sudo ln -sf "$SITES_AVAILABLE/aerium.alburquenque.net"      "$SITES_ENABLED/"
+sudo ln -sf "$SITES_AVAILABLE/smartengage.alburquenque.net" "$SITES_ENABLED/"
 
 # ── 4. Verificar y recargar Nginx ────────────────────────────────────────────
 echo "==> Verificando config..."

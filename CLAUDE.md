@@ -12,13 +12,14 @@ brief/
 └── CLAUDE.md     # Este archivo
 ```
 
-Los proyectos (RecuerdaBot, Aerium) viven en sus propios repos. Sus deploys se hacen
+Los proyectos (RecuerdaBot, Aerium, Smart Engage) viven en sus propios repos. Sus deploys se hacen
 directamente en la VM clonando esos repos en `/var/www/alburquenque.net/`.
 
 ## Dominios
 - `alburquenque.net` → **Vercel** (landing page, deploy automático)
 - `recuerda.alburquenque.net` → **Azure VM** (Docker Compose, 5 contenedores)
 - `aerium.alburquenque.net` → **Azure VM** (Nginx estático + FastAPI + PostgreSQL en Docker)
+- `smartengage.alburquenque.net` → **Azure VM** (Nginx → Docker Compose: NextJS app + PostgreSQL)
 
 ## Landing page (`landing/`)
 
@@ -67,6 +68,8 @@ ssh azureuser@<IP_VM>
 | RecuerdaBot (app)  | Docker     | 8000           | docker compose |
 | Aerium backend     | virtualenv | 8001           | systemd      |
 | Aerium DB          | Docker     | 5432           | docker compose |
+| Smart Engage (app) | Docker     | 3000           | docker compose |
+| Smart Engage DB    | Docker     | 5444           | docker compose |
 
 ### Paths en la VM
 ```
@@ -76,11 +79,13 @@ ssh azureuser@<IP_VM>
 ├── aerium/backend/venv/   Python virtualenv
 ├── aerium/frontend/repo/  git clone de aerium-frontend
 ├── aerium/frontend/dist/  build estático (Nginx lo sirve aquí)
-└── aerium/docker/         docker-compose.yml de la DB
+├── aerium/docker/         docker-compose.yml de la DB
+└── smartengage/repo/      git clone de smart-engage (app NextJS + docker-compose.yml)
 
 /etc/nginx/sites-available/
 ├── recuerda.alburquenque.net
-└── aerium.alburquenque.net
+├── aerium.alburquenque.net
+└── smartengage.alburquenque.net
 
 /etc/systemd/system/
 └── aerium-backend.service
@@ -104,6 +109,11 @@ sudo journalctl -u aerium-backend -f
 # Aerium DB
 cd /var/www/alburquenque.net/aerium/docker
 docker compose ps
+
+# Smart Engage
+cd /var/www/alburquenque.net/smartengage/repo
+docker compose ps
+docker compose logs -f app
 ```
 
 ## Notas de arquitectura
@@ -113,3 +123,6 @@ docker compose ps
 - SSL para landing: lo maneja Vercel automáticamente
 - RecuerdaBot es 100% Docker: app FastAPI, bot Telegram, worker Celery, Redis, PostgreSQL
 - Aerium: solo la DB en Docker; el backend corre en virtualenv para facilitar logs y acceso a la DB
+- Smart Engage: 100% Docker (2 contenedores): NextJS app (puerto 3000) + PostgreSQL (puerto 5444)
+  - Puertos mapeados a `127.0.0.1` — DB accesible solo desde localhost, nunca desde internet
+  - NextJS se comunica con PostgreSQL por red Docker interna (`db:5432`), no por el puerto del host
