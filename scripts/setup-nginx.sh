@@ -66,11 +66,15 @@ if [ ${#MISSING_CERTS[@]} -gt 0 ]; then
         CERTBOT_ARGS+=("-d" "$domain")
     done
     sudo certbot --nginx "${CERTBOT_ARGS[@]}"
-    echo "    Recargando Nginx con SSL..."
-    sudo systemctl reload nginx
 else
-    echo "    Todos los certificados ya existen, sin cambios."
+    # Certs exist but configs were just overwritten — re-run certbot to restore SSL blocks
+    echo "    Restaurando bloques SSL en configs recién copiados..."
+    for domain in "${DOMAINS[@]}"; do
+        sudo certbot --nginx -d "$domain" --reinstall --non-interactive
+    done
 fi
+echo "    Recargando Nginx con SSL..."
+sudo systemctl reload nginx
 
 echo ""
 echo "OK. Nginx configurado y SSL activo para: ${DOMAINS[*]}"
