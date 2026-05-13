@@ -33,9 +33,10 @@ fi
 
 # ── 2. Copiar configs ────────────────────────────────────────────────────────
 echo "==> Copiando configs de Nginx..."
+sudo cp "$REPO_DIR/nginx/conf.d/rate-limiting.conf" /etc/nginx/conf.d/rate-limiting.conf
 sudo cp "$REPO_DIR/nginx/recuerdabot.alburquenque.net.conf" "$SITES_AVAILABLE/recuerdabot.alburquenque.net"
 sudo cp "$REPO_DIR/nginx/aerium.alburquenque.net.conf"      "$SITES_AVAILABLE/aerium.alburquenque.net"
-sudo cp "$REPO_DIR/nginx/smartengage.alburquenque.net.conf"      "$SITES_AVAILABLE/smartengage.alburquenque.net"
+sudo cp "$REPO_DIR/nginx/smartengage.alburquenque.net.conf" "$SITES_AVAILABLE/smartengage.alburquenque.net"
 
 # ── 3. Habilitar sites (idempotente con -sf) ─────────────────────────────────
 echo "==> Habilitando sites..."
