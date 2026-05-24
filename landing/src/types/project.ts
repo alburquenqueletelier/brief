@@ -34,6 +34,15 @@ export const projects: Project[] = [
     status: 'live',
   },
   {
+    id: 'sexy-mkt',
+    name: 'Sexy MKT',
+    description:
+      'Landing page para evento del día mundial de Marketing realizado por Felipe Parraguez',
+    url: resolveUrl(import.meta.env.VITE_URL_SMART_ENGAGE_PORT, import.meta.env.VITE_URL_SMART_ENGAGE),
+    tags: ['Vue Js', 'Typescript', 'Tailwind'],
+    status: 'live',
+  },
+  {
     id: 'smart_engage',
     name: 'Smart Engage',
     description:

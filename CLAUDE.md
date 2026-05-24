@@ -12,13 +12,13 @@ brief/
 └── CLAUDE.md     # Este archivo
 ```
 
-Los proyectos (RecuerdaBot, Aerium, Smart Engage) viven en sus propios repos. Sus deploys se hacen
+Los proyectos (UniFocus, Aerium, Smart Engage) viven en sus propios repos. Sus deploys se hacen
 directamente en la VM clonando esos repos en `/var/www/alburquenque.net/`.
 
 ## Dominios
 - `alburquenque.net` → **Vercel** (landing page, deploy automático)
-- `recuerda.alburquenque.net` → **Azure VM** (Docker Compose, 5 contenedores)
-- `aerium.alburquenque.net` → **Azure VM** (Nginx estático + FastAPI + PostgreSQL en Docker)
+- `recuerdabot.alburquenque.net` → **Azure VM** (UniFocus Bot, Docker Compose, 2 contenedores)
+- `aerium.alburquenque.net` → **Azure VM** (Nginx estático + FastAPI en uvicorn + PostgreSQL en Docker)
 - `smartengage.alburquenque.net` → **Azure VM** (Nginx → Docker Compose: NextJS app + PostgreSQL)
 
 ## Landing page (`landing/`)
@@ -62,28 +62,31 @@ ssh azureuser@<IP_VM>
 ```
 
 ### Servicios que corren en la VM
-| Servicio           | Tipo       | Puerto interno | Gestión      |
-|--------------------|------------|----------------|--------------|
-| Nginx              | paquete    | 80, 443        | systemd      |
-| RecuerdaBot (app)  | Docker     | 8000           | docker compose |
-| Aerium backend     | virtualenv | 8001           | systemd      |
-| Aerium DB          | Docker     | 5432           | docker compose |
-| Smart Engage (app) | Docker     | 3000           | docker compose |
-| Smart Engage DB    | Docker     | 5444           | docker compose |
+| Servicio              | Tipo       | Puerto interno | Gestión        |
+|-----------------------|------------|----------------|----------------|
+| Nginx                 | paquete    | 80, 443        | systemd        |
+| UniFocus web          | Docker     | 8000           | docker compose |
+| UniFocus scheduler    | Docker     | —              | docker compose |
+| UniFocus DB           | Docker     | 5432 (interno) | docker compose |
+| UniFocus Redis        | Docker     | 6379 (interno) | docker compose |
+| Aerium backend        | uvicorn    | 8081           | systemd        |
+| Aerium DB             | Docker     | 5432           | docker compose |
+| Smart Engage (app)    | Docker     | 3000           | docker compose |
+| Smart Engage DB       | Docker     | 5444           | docker compose |
 
 ### Paths en la VM
 ```
 /var/www/alburquenque.net/
-├── recuerda/repo/         git clone de recuerdabot
-├── aerium/backend/repo/   git clone de aerium-backend
-├── aerium/backend/venv/   Python virtualenv
-├── aerium/frontend/repo/  git clone de aerium-frontend
-├── aerium/frontend/dist/  build estático (Nginx lo sirve aquí)
-├── aerium/docker/         docker-compose.yml de la DB
-└── smartengage/repo/      git clone de smart-engage (app NextJS + docker-compose.yml)
+├── recuerdabot/recuerda_bot/  git clone de unifocus (docker-compose.prod.yml aquí)
+├── aerium/backend/repo/       git clone de aerium-backend
+├── aerium/backend/venv/       Python virtualenv
+├── aerium/frontend/repo/      git clone de aerium-frontend
+├── aerium/frontend/dist/      build estático (Nginx lo sirve aquí)
+├── aerium/docker/             docker-compose.yml de la DB
+└── smartengage/repo/          git clone de smart-engage (app NextJS + docker-compose.yml)
 
 /etc/nginx/sites-available/
-├── recuerda.alburquenque.net
+├── recuerdabot.alburquenque.net
 ├── aerium.alburquenque.net
 └── smartengage.alburquenque.net
 
@@ -97,10 +100,11 @@ ssh azureuser@<IP_VM>
 sudo nginx -t && sudo systemctl reload nginx
 sudo tail -f /var/log/nginx/error.log
 
-# RecuerdaBot
-cd /var/www/alburquenque.net/recuerda/repo
+# UniFocus
+cd /var/www/alburquenque.net/recuerdabot/recuerda_bot
 docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs -f app
+docker compose -f docker-compose.prod.yml logs -f web
+make prod-status   # alias útil
 
 # Aerium backend
 sudo systemctl status aerium-backend
@@ -118,11 +122,11 @@ docker compose logs -f app
 
 ## Notas de arquitectura
 - Nginx es el único punto de entrada a la VM (puertos 80/443 expuestos)
-- Los puertos de apps (8000, 8001, 5432) solo escuchan en `127.0.0.1` — nunca `0.0.0.0`
+- Los puertos de apps (8000, 8081, 3000) solo escuchan en `127.0.0.1` — nunca `0.0.0.0`
 - SSL para subdomains: Certbot (Let's Encrypt), renovación automática via systemd timer
 - SSL para landing: lo maneja Vercel automáticamente
-- RecuerdaBot es 100% Docker: app FastAPI, bot Telegram, worker Celery, Redis, PostgreSQL
-- Aerium: solo la DB en Docker; el backend corre en virtualenv para facilitar logs y acceso a la DB
+- UniFocus es 100% Docker (4 contenedores): web FastAPI (8000), scheduler, PostgreSQL, Redis
+- Aerium: solo la DB en Docker; el backend corre en uvicorn/systemd en puerto 8081
 - Smart Engage: 100% Docker (2 contenedores): NextJS app (puerto 3000) + PostgreSQL (puerto 5444)
   - Puertos mapeados a `127.0.0.1` — DB accesible solo desde localhost, nunca desde internet
   - NextJS se comunica con PostgreSQL por red Docker interna (`db:5432`), no por el puerto del host
